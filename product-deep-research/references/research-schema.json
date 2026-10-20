@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:product-deep-research:schema:1.0",
+  "title": "Evidence-linked single-product research run",
+  "description": "All research assertions live in claims. Narrative sections reference claim IDs. Identity and scope fields are user/researcher metadata, not verified product facts. Dates are ISO local verification dates.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "product", "research", "sources", "evidence", "claims", "sections", "custom_sections", "journeys", "ux_issues", "recommendations", "executive_summary", "conclusions", "limitations"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "product": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "url", "regional_variant", "industry", "market"],
+      "properties": {"name": {"$ref": "#/$defs/text"}, "url": {"$ref": "#/$defs/url"}, "regional_variant": {"type": "string"}, "industry": {"$ref": "#/$defs/text"}, "market": {"$ref": "#/$defs/text"}}
+    },
+    "research": {
+      "type": "object", "additionalProperties": false,
+      "required": ["run_id", "date", "language", "depth", "objectives", "methodology", "additional_requirements", "comparison_group", "competitor_urls"],
+      "properties": {
+        "run_id": {"type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$"},
+        "date": {"$ref": "#/$defs/date"}, "language": {"type": "string", "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$", "default": "ru"},
+        "depth": {"enum": ["brief", "standard", "deep"]},
+        "objectives": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/text"}},
+        "methodology": {"$ref": "#/$defs/text"},
+        "comparison_group": {"type": "string"},
+        "competitor_urls": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/url"}},
+        "additional_requirements": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "title", "request"], "properties": {"id": {"$ref": "#/$defs/id"}, "title": {"$ref": "#/$defs/text"}, "request": {"$ref": "#/$defs/text"}}}}
+      }
+    },
+    "sources": {"type": "array", "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "url", "title", "publisher_type", "independence_group", "access_status", "accessed_on", "access_method", "access_detail"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"}, "url": {"$ref": "#/$defs/url"}, "title": {"$ref": "#/$defs/text"},
+        "publisher_type": {"enum": ["FIRST_PARTY", "INDEPENDENT"]}, "independence_group": {"$ref": "#/$defs/text"},
+        "access_status": {"enum": ["ACCESSED", "NOT_ACCESSIBLE"]}, "accessed_on": {"$ref": "#/$defs/date"},
+        "access_method": {"enum": ["WEB", "BROWSER", "PLAYWRIGHT", "DOCUMENT"]}, "access_detail": {"$ref": "#/$defs/text"}
+      }
+    }},
+    "evidence": {"type": "array", "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "source_id", "kind", "verified_on", "detail", "locator", "screenshot"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"}, "source_id": {"$ref": "#/$defs/id"},
+        "kind": {"enum": ["FIRST_PARTY_STATEMENT", "INDEPENDENT_CORROBORATION", "DIRECT_OBSERVATION"]},
+        "verified_on": {"$ref": "#/$defs/date"}, "detail": {"$ref": "#/$defs/text"}, "locator": {"$ref": "#/$defs/text"},
+        "screenshot": {"type": ["string", "null"], "pattern": "^screenshots/.+\\.(png|jpg|jpeg)$"}
+      }
+    }},
+    "claims": {"type": "array", "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "category", "title", "statement", "kind", "status", "confidence", "verified_on", "source_ids", "evidence_ids", "qualification", "gap_reason", "custom_requirement_id", "facet", "value", "unit"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"}, "category": {"$ref": "#/$defs/category"},
+        "title": {"$ref": "#/$defs/text"}, "statement": {"$ref": "#/$defs/text"},
+        "kind": {"enum": ["FACT", "COMPANY_CLAIM", "OBSERVATION", "INTERPRETATION"]},
+        "status": {"enum": ["VERIFIED", "PARTIALLY_VERIFIED", "HYPOTHESIS", "UNVERIFIED", "NOT_ACCESSIBLE"]},
+        "confidence": {"enum": ["HIGH", "MEDIUM", "LOW"]}, "verified_on": {"$ref": "#/$defs/date"},
+        "source_ids": {"$ref": "#/$defs/ids"}, "evidence_ids": {"$ref": "#/$defs/ids"},
+        "qualification": {"type": "string"}, "gap_reason": {"type": "string"},
+        "custom_requirement_id": {"type": ["string", "null"]},
+        "facet": {"enum": ["strength", "weakness", "opportunity", null]},
+        "value": {"type": ["number", "string", "boolean", "null"]}, "unit": {"type": "string"}
+      }
+    }},
+    "sections": {"type": "array", "minItems": 15, "maxItems": 15, "items": {
+      "type": "object", "additionalProperties": false, "required": ["category", "claim_ids", "limitation"],
+      "properties": {"category": {"$ref": "#/$defs/standard_category"}, "claim_ids": {"$ref": "#/$defs/ids"}, "limitation": {"type": "string"}}
+    }},
+    "custom_sections": {"type": "array", "items": {
+      "type": "object", "additionalProperties": false, "required": ["requirement_id", "claim_ids", "limitation"],
+      "properties": {"requirement_id": {"$ref": "#/$defs/id"}, "claim_ids": {"$ref": "#/$defs/ids"}, "limitation": {"type": "string"}}
+    }},
+    "journeys": {"type": "array", "items": {
+      "type": "object", "additionalProperties": false, "required": ["id", "title", "goal", "status", "steps", "evidence_ids", "limitation"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"}, "title": {"$ref": "#/$defs/text"}, "goal": {"$ref": "#/$defs/text"},
+        "status": {"enum": ["TESTED", "PARTIAL", "NOT_TESTED"]}, "evidence_ids": {"$ref": "#/$defs/ids"}, "limitation": {"type": "string"},
+        "steps": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["action", "url", "outcome_claim_ids"], "properties": {"action": {"$ref": "#/$defs/text"}, "url": {"$ref": "#/$defs/url"}, "outcome_claim_ids": {"$ref": "#/$defs/ids"}}}}
+      }
+    }},
+    "ux_issues": {"type": "array", "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "title", "claim_id", "page_url", "heuristics", "severity", "severity_rationale", "impact", "recommendation", "priority", "wcag"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"}, "title": {"$ref": "#/$defs/text"}, "claim_id": {"$ref": "#/$defs/id"}, "page_url": {"$ref": "#/$defs/url"},
+        "heuristics": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "integer", "minimum": 1, "maximum": 10}},
+        "severity": {"type": "integer", "minimum": 0, "maximum": 4}, "severity_rationale": {"$ref": "#/$defs/text"},
+        "impact": {"$ref": "#/$defs/text"}, "recommendation": {"$ref": "#/$defs/text"}, "priority": {"enum": ["P0", "P1", "P2", "P3"]},
+        "wcag": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/text"}}
+      }
+    }},
+    "recommendations": {"type": "array", "items": {
+      "type": "object", "additionalProperties": false, "required": ["id", "title", "action", "rationale", "priority", "claim_ids"],
+      "properties": {"id": {"$ref": "#/$defs/id"}, "title": {"$ref": "#/$defs/text"}, "action": {"$ref": "#/$defs/text"}, "rationale": {"$ref": "#/$defs/text"}, "priority": {"enum": ["P0", "P1", "P2", "P3"]}, "claim_ids": {"$ref": "#/$defs/ids"}}
+    }},
+    "executive_summary": {"$ref": "#/$defs/ids"}, "conclusions": {"$ref": "#/$defs/ids"},
+    "limitations": {"type": "array", "items": {"$ref": "#/$defs/text"}},
+    "labels": {"description": "Optional translated report labels for languages other than ru/en. Keys are documented in report-template.md.", "type": "object", "additionalProperties": {"$ref": "#/$defs/text"}}
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$"},
+    "date": {"type": "string", "format": "date"},
+    "url": {"type": "string", "format": "uri", "pattern": "^https?://[^\\s]+$"},
+    "ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+    "standard_category": {"enum": ["overview", "positioning", "audience_jtbd", "customer_problems", "functionality", "products_services", "pricing", "business_model", "marketing", "user_journeys", "ux", "ui", "accessibility", "trust", "strengths_weaknesses_opportunities"]},
+    "category": {"enum": ["overview", "positioning", "audience_jtbd", "customer_problems", "functionality", "products_services", "pricing", "business_model", "marketing", "user_journeys", "ux", "ui", "accessibility", "trust", "strengths_weaknesses_opportunities", "custom"]}
+  }
+}

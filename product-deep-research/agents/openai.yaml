@@ -1,0 +1,4 @@
+interface:
+  display_name: "Product Deep Research"
+  short_description: "Evidence-based product research with Word and Excel"
+  default_prompt: "Use $product-deep-research to research a product, verify evidence, and export a Word report and competitor database."

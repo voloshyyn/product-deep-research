@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.qa/
+*.egg-info/
+.work/
+research-output/
+product-research/
+.env
+.env.*
+!.env.example
